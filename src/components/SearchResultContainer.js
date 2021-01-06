@@ -1,0 +1,194 @@
+import React, { Component } from "react";
+import SearchForm from "./SearchForm";
+import EmployeeCard from "./EmployeeCard";
+import API from "../utils/API";
+import "../styles/Result.css";
+
+
+class SearchResultContainer extends Component {
+  state = {
+    result: [],
+    search: "",
+    checked: false
+  };
+
+  // On mount to get the employees info listed
+  componentDidMount() {
+    API.search()
+      .then(res => {
+        this.setState({
+          result: res.data.results.map((e) => ({
+            firstName: e.name.first,
+            lastName: e.name.last,
+            picture: e.picture.large,
+            email: e.email,
+            phone: e.phone,
+            key: e.id.value,
+          }))
+
+        })
+        console.log(this.state);
+
+      })
+      .catch(error => console.log(error));
+  }
+
+  handleInputChange = event => {
+    // Getting the value and name of the input which triggered the change
+    const { name, value } = event.target;
+    console.log(value);
+    // Updating the input's state
+    this.setState({
+      [name]: value
+    });
+  };
+
+  // When the form is submitted, search the Giphy API for `this.state.search`
+  handleFormSubmit = event => {
+    event.preventDefault();
+    const value = event.target.value;
+    const name = event.target.name;
+    //filter function here
+
+    if (this.state.search === "") {
+      API.search()
+        .then(res => {
+          this.setState({
+            result: res.data.results.map((e) => ({
+              firstName: e.name.first,
+              lastName: e.name.last,
+              picture: e.picture.large,
+              email: e.email,
+              phone: e.phone,
+              key: e.id.value,
+            }))
+
+          })
+          console.log(this.state);
+
+        })
+        .catch(error => console.log(error));
+    } else {
+      const pStrg = this.toTitleCase(this.state.search);
+      this.filterEmployees(pStrg);
+      this.setState({
+
+        [name]: value
+
+      });
+
+
+    };
+  }
+  toTitleCase(str) {
+    return str.replace(
+      /\w\S*/g,
+      function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      }
+    );
+  }
+
+
+  filterEmployees = (searchkey) => {
+    var filterResult = this.state.result.filter(person => person.firstName === searchkey)
+
+    this.setState({
+      result: filterResult
+    })
+  }
+
+  handleSorting = (e) => {
+    // this.setState({
+    //   checked: e.target.checked
+    // })
+    const getStateResult = this.state.result;
+    if (e.target.checked) {
+      const sortedResults = getStateResult.sort((a, b) => {
+        let fa = a.firstName.toLowerCase(),
+          fb = b.firstName.toLowerCase();
+        if (fa < fb) {
+          return -1;
+        }
+        if (fa > fb) {
+          return 1;
+        }
+        return 0;
+      });
+      this.setState({
+        result: sortedResults,
+        checked: e.target.checked
+      })
+
+    } else {
+      const sortedResults = getStateResult.sort((a, b) => {
+        let fa = a.firstName.toLowerCase(),
+          fb = b.firstName.toLowerCase();
+        if (fb < fa) {
+          return -1;
+        }
+        if (fa > fb) {
+          return 1;
+        }
+        return 0;
+      });
+      this.setState({
+        result: sortedResults,
+        checked: e.target.checked
+      })
+
+
+    }
+
+  };
+
+  render() {
+    return (
+      <div className="container">
+        <div className="row">
+          <div className="col-md-12">
+            <h2>Employee Directory</h2>
+          </div>
+        </div>
+        <div className="row text-center">
+          <div className="col-md-6">
+            <SearchForm
+              value={this.state.search}
+              handleInputChange={this.handleInputChange}
+              handleFormSubmit={this.handleFormSubmit}
+            />
+          </div>
+        </div>
+
+        <div className="row">
+
+          <table className="table">
+            <tr>
+              <th scope="col"> Photo</th>
+              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />FirstName</th>
+              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />LastName </th>
+              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />Email</th>
+              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />Phone</th>
+            </tr>
+
+            {[...this.state.result].map((info) =>
+              <EmployeeCard
+                picture={info.picture}
+                firstName={info.firstName}
+                lastName={info.lastName}
+                email={info.email}
+                phone={info.phone}
+                key={info.key}
+              />
+            )}
+
+          </table>
+        </div>
+
+
+      </div>
+    );
+  }
+}
+
+export default SearchResultContainer;
