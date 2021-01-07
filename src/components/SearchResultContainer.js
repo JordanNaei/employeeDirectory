@@ -4,12 +4,12 @@ import EmployeeCard from "./EmployeeCard";
 import API from "../utils/API";
 import "../styles/Result.css";
 
-
 class SearchResultContainer extends Component {
   state = {
     result: [],
     search: "",
-    checked: false
+    checked: "",
+    originalLoad: []
   };
 
   // On mount to get the employees info listed
@@ -24,10 +24,13 @@ class SearchResultContainer extends Component {
             email: e.email,
             phone: e.phone,
             key: e.id.value,
-          }))
-
+          })),
         })
-        console.log(this.state);
+        this.setState({
+          originalLoad: [...this.state.result],
+        });
+
+        console.log(this.state.originalLoad);
 
       })
       .catch(error => console.log(error));
@@ -46,40 +49,25 @@ class SearchResultContainer extends Component {
   // When the form is submitted, search the Giphy API for `this.state.search`
   handleFormSubmit = event => {
     event.preventDefault();
-    const value = event.target.value;
-    const name = event.target.name;
-    //filter function here
-
     if (this.state.search === "") {
-      API.search()
-        .then(res => {
-          this.setState({
-            result: res.data.results.map((e) => ({
-              firstName: e.name.first,
-              lastName: e.name.last,
-              picture: e.picture.large,
-              email: e.email,
-              phone: e.phone,
-              key: e.id.value,
-            }))
-
-          })
-          console.log(this.state);
-
-        })
-        .catch(error => console.log(error));
+      this.setState({
+        result: [...this.state.originalLoad],
+      })
     } else {
       const pStrg = this.toTitleCase(this.state.search);
       this.filterEmployees(pStrg);
-      this.setState({
+    }
 
-        [name]: value
+  };
 
-      });
+  handleReload = event => {
+    event.preventDefault();
+    this.setState({
+      result: [...this.state.originalLoad],
+    })
 
+  };
 
-    };
-  }
   toTitleCase(str) {
     return str.replace(
       /\w\S*/g,
@@ -89,19 +77,16 @@ class SearchResultContainer extends Component {
     );
   }
 
-
-  filterEmployees = (searchkey) => {
-    var filterResult = this.state.result.filter(person => person.firstName === searchkey)
-
+ filterEmployees = async (searchkey) => {
+    var filterResult = this.state.result.filter(person => person.firstName === searchkey);
+    console.log(filterResult);
     this.setState({
       result: filterResult
     })
   }
 
+
   handleSorting = (e) => {
-    // this.setState({
-    //   checked: e.target.checked
-    // })
     const getStateResult = this.state.result;
     if (e.target.checked) {
       const sortedResults = getStateResult.sort((a, b) => {
@@ -121,19 +106,9 @@ class SearchResultContainer extends Component {
       })
 
     } else {
-      const sortedResults = getStateResult.sort((a, b) => {
-        let fa = a.firstName.toLowerCase(),
-          fb = b.firstName.toLowerCase();
-        if (fb < fa) {
-          return -1;
-        }
-        if (fa > fb) {
-          return 1;
-        }
-        return 0;
-      });
+
       this.setState({
-        result: sortedResults,
+        result: [...this.state.originalLoad],
         checked: e.target.checked
       })
 
@@ -156,6 +131,7 @@ class SearchResultContainer extends Component {
               value={this.state.search}
               handleInputChange={this.handleInputChange}
               handleFormSubmit={this.handleFormSubmit}
+              handleReload={this.handleReload}
             />
           </div>
         </div>
@@ -171,17 +147,16 @@ class SearchResultContainer extends Component {
               <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />Phone</th>
             </tr>
 
-            {[...this.state.result].map((info) =>
-              <EmployeeCard
-                picture={info.picture}
-                firstName={info.firstName}
-                lastName={info.lastName}
-                email={info.email}
-                phone={info.phone}
-                key={info.key}
-              />
-            )}
 
+            {this.state.result.map(info => (
+                <EmployeeCard
+                  picture={info.picture}
+                  firstName={info.firstName}
+                  lastName={info.lastName}
+                  email={info.email}
+                  phone={info.phone}
+                  key={info.key}
+                ></EmployeeCard>))}
           </table>
         </div>
 
