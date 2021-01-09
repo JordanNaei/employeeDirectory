@@ -8,6 +8,7 @@ class SearchResultContainer extends Component {
   state = {
     result: [],
     search: "",
+    searchName: "",
     checked: "",
     originalLoad: []
   };
@@ -52,6 +53,7 @@ class SearchResultContainer extends Component {
     if (this.state.search === "") {
       this.setState({
         result: [...this.state.originalLoad],
+        searchName: ""
       })
     } else {
       const pStrg = this.toTitleCase(this.state.search);
@@ -81,17 +83,18 @@ class SearchResultContainer extends Component {
     var filterResult = this.state.result.filter(person => person.firstName === searchkey);
     console.log(filterResult);
     this.setState({
-      result: filterResult
+      result: filterResult,
+      searchName: searchkey
     })
   }
 
 
-  handleSorting = (e) => {
+  handleSorting = async (e) => {
     const getStateResult = this.state.result;
     if (e.target.checked) {
-      const sortedResults = getStateResult.sort((a, b) => {
-        let fa = a.firstName.toLowerCase(),
-          fb = b.firstName.toLowerCase();
+      const sortedResults = await getStateResult.sort((a, b) => {
+        let fa = a.firstName.toLowerCase();
+        let fb = b.firstName.toLowerCase();
         if (fa < fb) {
           return -1;
         }
@@ -102,14 +105,14 @@ class SearchResultContainer extends Component {
       });
       this.setState({
         result: sortedResults,
-        checked: e.target.checked
+        checked: true
       })
 
     } else {
 
       this.setState({
         result: [...this.state.originalLoad],
-        checked: e.target.checked
+        checked: false
       })
 
 
@@ -141,10 +144,10 @@ class SearchResultContainer extends Component {
           <table className="table">
             <tr>
               <th scope="col"> Photo</th>
-              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />FirstName</th>
-              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />LastName </th>
-              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />Email</th>
-              <th scope="col"><input className="form-check-input" onChange={event => this.handleSorting(event)} type="checkbox" value="" id="flexCheckDefault" />Phone</th>
+              <th scope="col"><input className="form-check-input" name="firstName" onChange={event => this.handleSorting(event)} type="checkbox" id="flexCheckDefault1" />FirstName</th>
+              <th scope="col"><input className="form-check-input" name="lastName" onChange={event => this.handleSorting(event)} type="checkbox"  id="flexCheckDefault2" />LastName </th>
+              <th scope="col"><input className="form-check-input" name="email" onChange={event => this.handleSorting(event)} type="checkbox" id="flexCheckDefault3" />Email</th>
+              <th scope="col"><input className="form-check-input" name="phone" onChange={event => this.handleSorting(event)} type="checkbox" id="flexCheckDefault4" />Phone</th>
             </tr>
 
 
