@@ -67,6 +67,7 @@ class SearchResultContainer extends Component {
     this.setState({
       result: [...this.state.originalLoad],
     })
+    
 
   };
 
